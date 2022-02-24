@@ -744,7 +744,7 @@ for j in range(pcycles):
 #
   print "Began doing self-cal on :"+scmode+str(count)
   gaincal(vis=ms,caltable=ms+'.'+scmode+str(count),selectdata=False,solint=str(solint/2**count)+'min',refant=refant,refantmode="strict",
-        minblperant=6, spw=gainspw2,minsnr=1.0,solnorm=True,gaintype="G",calmode=scmode,append=False, uvrange=uvrascal, parang=True)
+        minblperant=6, spw=gainspw2,minsnr=1.0,solnorm=True,gaintype="G",calmode=scmode,append=False, uvrange=uvrascal, parang=False)
 # 
   print "Began processing :"+scmode+str(count)
   applycal(vis=ms, selectdata=False,gaintable=ms+'.'+scmode+str(count), parang=False,calwt=False,applymode="calflag",flagbackup=True)  
@@ -788,7 +788,7 @@ for j in range(apcycles):
 #
   print "Began doing self-cal on :"+scmode+str(count)
   gaincal(vis=ms,caltable=ms+'.'+scmode+str(count),selectdata=False,solint=str(apsolint/2**sfactor)+'min',refant=refant,
-        refantmode="strict",spw=gainspw2,minblperant=6, minsnr=1.0,solnorm=True,gaintype="G",calmode=scmode,append=False, parang=True)
+        refantmode="strict",spw=gainspw2,minblperant=6, minsnr=1.0,solnorm=True,gaintype="G",calmode=scmode,append=False, parang=False)
 #
   applycal(vis=ms, selectdata=False,gaintable=ms+'.'+scmode+str(count), parang=False,calwt=False,applymode="calflag",flagbackup=True)  
 #
