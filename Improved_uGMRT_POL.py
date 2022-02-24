@@ -73,7 +73,9 @@ kcorrfield     = '3'     # field number of the antenna-based delay calibrator
 target         = '1'     # If more than one target, use target='2,3,4...', 
                          # BUT modify the pipelines to name and split the targets correctly
                          # GO TO LINE 149 and 620 to edit the target field ------ Janhavi Baghel
-refant='18'              # use only one option and refantmode 'strict' ------ Janhavi Baghel
+refant='18'              # use only one option and refantmode 'strict' . 
+			 #With uGMRT's antenna configuration, it is better to use one of the outer antennas for reference, 
+			 #which provides longer baselines and more stable phase solutions.------ Janhavi Baghel
 #
 transferfield = '0,2,4,5'
 polcalib1 = '3'           # field number of the polarized calibratorar 1
