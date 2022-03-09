@@ -652,7 +652,7 @@ def QUVimg():
        maxpsffraction=0.8,interactive=False,usemask="auto-multithresh",mask="",pbmask=0.0,
        sidelobethreshold=2.0,noisethreshold=5.0,lownoisethreshold=1.5,negativethreshold=0.0,smoothfactor=1.0,
        minbeamfrac=0.3,cutthreshold=0.01,growiterations=75,dogrowprune=True,minpercentchange=-1.0,
-       verbose=False,fastnoise=True,restart=True,savemodel="modelcolumn",calcres=True,
+       verbose=False,fastnoise=True,restart=True,savemodel="none",calcres=True,
        calcpsf=True,parallel=False)
 
 	exportfits(imagename=ms+'.'+scmode+str(count-1)+'_Q'+'.image.tt0', fitsimage=ms+'.'+scmode+str(count-1)+'_Q'+'.fits', velocity=False,optical=False,bitpix=-32, minpix=0, maxpix=-1, overwrite=False, dropstokes=False, stokeslast=True, history=True, dropdeg=False)
@@ -673,7 +673,7 @@ def QUVimg():
        maxpsffraction=0.8,interactive=False,usemask="auto-multithresh",mask="",pbmask=0.0,
        sidelobethreshold=2.0,noisethreshold=5.0,lownoisethreshold=1.5,negativethreshold=0.0,smoothfactor=1.0,
        minbeamfrac=0.3,cutthreshold=0.01,growiterations=75,dogrowprune=True,minpercentchange=-1.0,
-       verbose=False,fastnoise=True,restart=True,savemodel="modelcolumn",calcres=True,
+       verbose=False,fastnoise=True,restart=True,savemodel="none",calcres=True,
        calcpsf=True,parallel=False)
 
 	exportfits(imagename=ms+'.'+scmode+str(count-1)+'_U'+'.image.tt0' , fitsimage=ms+'.'+scmode+str(count-1)+'_U'+'.fits', velocity=False, optical=False, bitpix=-32, minpix=0, maxpix=-1, overwrite=False, dropstokes=False, stokeslast=True, history=True, dropdeg=False)
@@ -696,7 +696,7 @@ def QUVimg():
 		      maxpsffraction=0.8,interactive=False,usemask="auto-multithresh",mask="",pbmask=0.0,
 		       sidelobethreshold=2.0,noisethreshold=5.0,lownoisethreshold=1.5,negativethreshold=0.0,smoothfactor=1.0,
 		       minbeamfrac=0.3,cutthreshold=0.01,growiterations=75,dogrowprune=True,minpercentchange=-1.0,
- 		      verbose=False,fastnoise=True,restart=True,savemodel="modelcolumn",calcres=True,
+ 		      verbose=False,fastnoise=True,restart=True,savemodel="none",calcres=True,
  		      calcpsf=True,parallel=False)
 
 		exportfits(imagename=ms+'.'+scmode+str(count-1)+'_V'+'.image.tt0' , fitsimage=ms+'.'+scmode+str(count-1)+'_V'+'.fits',velocity=False,optical=False,bitpix=-32,
