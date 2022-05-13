@@ -215,14 +215,14 @@ polmodel1 = pol_model(polcalib1)
 i0_1 = polmodel1[0]
 polindices_1 = polmodel1[2]
 polangles_1 = polmodel1[3]
-alphabeta_1 = polmodel1[4]
+alphabeta_1 = polmodel1[4][1:3]
 
 #For polarized calibrator 2
 polmodel2 = pol_model(polcalib2)
 i0_2 = polmodel2[0]
 polindices_2 = polmodel2[2]
 polangles_2 = polmodel2[3]
-alphabeta_2 = polmodel2[4]
+alphabeta_2 = polmodel2[4][1:3]
 
 ###################################################################################################################################
 print ("Measurement set contains :")
