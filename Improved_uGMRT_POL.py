@@ -163,6 +163,27 @@ reffrequnit = reffreqfull[1]
 reffreq = reffreqfull[2]
 fieldnames = reffreqfull[3]
 
+#For polarization calibration; 
+#
+
+print "Making polarization calibration models" 
+import numpy as np
+from scipy.optimize import curve_fit
+
+def refreq_function():
+	msmd.open(ms)
+	reffreq0 = msmd.reffreq(0)
+	msmd.done()
+	v = (reffreq0['m0']['value'])
+	u = (reffreq0['m0']['unit'])
+	w = str(v)+u
+	return v,u,w
+
+reffreqfull = refreq_function()
+reffreqval = reffreqfull[0]
+reffrequnit = reffreqfull[1]
+reffreq = reffreqfull[2]
+
 def pol_model(p): 
 	myset=setjy(vis=ms, field = p, spw = '', scalebychan=True)
 	i0 = (myset [p]['0']['fluxd'][0]) # Stokes I value from setjy
@@ -184,38 +205,43 @@ def pol_model(p):
 		f0=reffreqval 
 
 	# For polindices c0, c1 are the coefficients in the polynomial expansion of fractional polarization as function of frequency
-	def PF(f, c0, c1):
-		return c0 + c1*((f-f0)/f0)
+	def PF(f, c0, c1, c2, c3):
+		return c0 + c1*((f-f0)/f0)+ c2*((f-f0)/f0)**2 + c3*((f-f0)/f0)**3
 
 	coeffs1, cov1 = curve_fit(PF,f,pf)
 	polindices = (coeffs1)
 
 	# For polangles d0, d1 are the coefficients in the polynomial expansion of polarization angle as function of frequency
-	def PA(f, d0, d1):
-       	 return d0 + d1*((f-f0)/f0)
+	def PA(f, d0, d1, d2, d3):
+       	 return d0 + d1*((f-f0)/f0) + d2*((f-f0)/f0)**2 + d3*((f-f0)/f0)**3
 
 	coeffs2, cov2 = curve_fit(PA,f,pa)
 	polangles = (coeffs2*pi/180)
 	# For alphabeta, alpha is spectral index and beta is curvature
 	def F(f, *an):
-        	return an[0] + an[1]*np.log10(f) + an[2]*(np.log10(f))**2
+        	return an[0] + an[1]*np.log10(f) + an[2]*(np.log10(f))**2 + an[3]*(np.log10(f))**3
 
 	S=10**(F(f,*an))
+		
+	def fr(i):
+    		return 0.00128/(2**i)
 
+	f3 = (f0-fr(np.arange(0,50))).tolist()+[f0]+(f0+fr(np.arange(0,50))).tolist()
+	S3 = 10**(F(f3,*an))
 	def Sa(f,Sa,alpha,beta):
        	 return Sa*(f/f0)**(alpha+beta*np.log10(f/f0))
 
-	popt, pcov = curve_fit(Sa, f, S)
+	popt, pcov = curve_fit(Sa, f3, S3)
 	alphabeta= (popt)
 	
 	return i0,name,polindices,polangles,alphabeta
 #
 #For polarized calibrator 1
-polmodel1 = pol_model(polcalib1)
-i0_1 = polmodel1[0]
-polindices_1 = polmodel1[2]
-polangles_1 = polmodel1[3]
-alphabeta_1 = polmodel1[4][1:3]
+polmodel_1 = pol_model(polcalib)
+i0_1 = polmodel[0]
+polindices_1 = polmodel[2]
+polangles_1 = polmodel[3]
+alphabeta_1 =polmodel[4][1:3]
 
 #For polarized calibrator 2
 polmodel2 = pol_model(polcalib2)
