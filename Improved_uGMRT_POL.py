@@ -52,7 +52,7 @@ flagdata(vis=ms, mode='manual', field ='', spw='', antenna='C03', timerange='', 
 #These steps can be put in a separate init.py file and the output of listobs() then read to fill in initializing parameters
 ####################################################################################################################################
 
-print "Initializing parameters" 
+print ("Initializing parameters") 
 
 ms='multi.ms'
 #
@@ -141,16 +141,16 @@ createV=False		 # Create Stokes V image ----- Janhavi Baghel
 ####################################################################################################################################
 #For polarization calibration; ----- Janhavi Baghel
 #
-print "Making polarization calibration models" 
+print ("Making polarization calibration models") 
 import numpy as np
 from scipy.optimize import curve_fit
 
 def refreq_function():
 	msmd.open(ms)
-        # get reference frequency
+	# get reference frequency
 	reffreq0 = msmd.reffreq(0)
-        # get list of field names in the ms
-        fieldnames = msmd.fieldnames()
+	# get list of field names in the ms
+	fieldnames = msmd.fieldnames()
 	msmd.done()
 	v = (reffreq0['m0']['value'])
 	u = (reffreq0['m0']['unit'])
@@ -162,27 +162,6 @@ reffreqval = reffreqfull[0]
 reffrequnit = reffreqfull[1]
 reffreq = reffreqfull[2]
 fieldnames = reffreqfull[3]
-
-#For polarization calibration; 
-#
-
-print "Making polarization calibration models" 
-import numpy as np
-from scipy.optimize import curve_fit
-
-def refreq_function():
-	msmd.open(ms)
-	reffreq0 = msmd.reffreq(0)
-	msmd.done()
-	v = (reffreq0['m0']['value'])
-	u = (reffreq0['m0']['unit'])
-	w = str(v)+u
-	return v,u,w
-
-reffreqfull = refreq_function()
-reffreqval = reffreqfull[0]
-reffrequnit = reffreqfull[1]
-reffreq = reffreqfull[2]
 
 def pol_model(p): 
 	myset=setjy(vis=ms, field = p, spw = '', scalebychan=True)
@@ -205,21 +184,21 @@ def pol_model(p):
 		f0=reffreqval 
 
 	# For polindices c0, c1 are the coefficients in the polynomial expansion of fractional polarization as function of frequency
-	def PF(f, c0, c1, c2, c3):
-		return c0 + c1*((f-f0)/f0)+ c2*((f-f0)/f0)**2 + c3*((f-f0)/f0)**3
+	def PF(f, c0, c1, c2): #add c3 if needed
+		return c0 + c1*((f-f0)/f0)+ c2*((f-f0)/f0)**2 # + c3*((f-f0)/f0)**3
 
 	coeffs1, cov1 = curve_fit(PF,f,pf)
 	polindices = (coeffs1)
 
 	# For polangles d0, d1 are the coefficients in the polynomial expansion of polarization angle as function of frequency
-	def PA(f, d0, d1, d2, d3):
-       	 return d0 + d1*((f-f0)/f0) + d2*((f-f0)/f0)**2 + d3*((f-f0)/f0)**3
+	def PA(f, d0, d1, d2): #add d3 if needed
+       	 return d0 + d1*((f-f0)/f0) + d2*((f-f0)/f0)**2 # + d3*((f-f0)/f0)**3
 
 	coeffs2, cov2 = curve_fit(PA,f,pa)
 	polangles = (coeffs2*pi/180)
 	# For alphabeta, alpha is spectral index and beta is curvature
 	def F(f, *an):
-        	return an[0] + an[1]*np.log10(f) + an[2]*(np.log10(f))**2 + an[3]*(np.log10(f))**3
+        	return an[0] + an[1]*np.log10(f) + an[2]*(np.log10(f))**2 # + an[3]*(np.log10(f))**3
 
 	S=10**(F(f,*an))
 		
@@ -275,73 +254,73 @@ print ("alphabeta_2", alphabeta_2)
 print ("Polarization Calibrator 3 (unpolarized): " + fieldnames[int(unpolcalib1)])
 
 ####################################################################################################################################
-print "First Round of Flagging" 
+print ("First Round of Flagging") 
 
 default(flagdata)
 #Flag using 'clip' option to remove high points for calibrators
-print "Flagging Step 1/11" 
+print ("Flagging Step 1/11") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=fluxfield, clipminmax=clipfluxcal,
         datacolumn="DATA",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
-print "Flagging Step 2/11" 
+print ("Flagging Step 2/11") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=secondaryfield, clipminmax=clipphasecal,
         datacolumn="DATA",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
-print "Flagging Step 3/11" 
+print ("Flagging Step 3/11") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=anofield, clipminmax=clipanofield,
         datacolumn="DATA",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
-print "Flagging Step 4/11" 
+print ("Flagging Step 4/11") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=polcalib2, clipminmax=clippolcalib2,
         datacolumn="DATA",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
-print "Flagging Step 5/11" 
+print ("Flagging Step 5/11") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=unpolcalib1, clipminmax=clipunpolcalib1,
         datacolumn="DATA",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
 # After clip, now flag using 'tfcrop' option for calibrator tight flagging
-print "Flagging Step 6/11" 
+print ("Flagging Step 6/11") 
 flagdata(vis=ms,mode="tfcrop", datacolumn="DATA", field=gaincals, ntime="scan",
         timecutoff=3.0, freqcutoff=3.0, timefit="line",freqfit="line",flagdimension="freqtime", 
         extendflags=False, timedevscale=4.0,freqdevscale=4.0, extendpols=False,growaround=False,
         action="apply", flagbackup=True,overwrite=True, writeflags=True)
 # Now extend the flags (80% more means full flag, change if required)
-print "Flagging Step 7/11" 
+print ("Flagging Step 7/11") 
 flagdata(vis=ms,mode="extend",spw=flagspw,field=gaincals,datacolumn="DATA",clipzeros=True,
          ntime="scan", extendflags=False, extendpols=True,growtime=80.0, growfreq=80.0,growaround=False,
          flagneartime=False, flagnearfreq=False, action="apply", flagbackup=True,overwrite=True, writeflags=True)
 # Now flag for target - moderate flagging, more flagging in self-cal cycles
 #Flag using 'clip' option to remove high points for target
-print "Flagging Step 8/11" 
+print ("Flagging Step 8/11") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=target, clipminmax=cliptarget,
         datacolumn="DATA",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
 # After clip, now flag using 'tfcrop' option for target
-print "Flagging Step 9/11" 
+print ("Flagging Step 9/11") 
 flagdata(vis=ms,mode="tfcrop", datacolumn="DATA", field=target, ntime="scan",
         timecutoff=4.0, freqcutoff=4.0, timefit="poly",freqfit="poly",flagdimension="freqtime", 
         extendflags=False, timedevscale=5.0,freqdevscale=5.0, extendpols=False,growaround=False,
         action="apply", flagbackup=True,overwrite=True, writeflags=True)
 # Now extend the flags (80% more means full flag, change if required)
-print "Flagging Step 10/11" 
+print ("Flagging Step 10/11") 
 flagdata(vis=ms,mode="extend",spw=flagspw,field=target,datacolumn="DATA",clipzeros=True,
          ntime="scan", extendflags=False, extendpols=True,growtime=80.0, growfreq=80.0,growaround=False,
          flagneartime=False, flagnearfreq=False, action="apply", flagbackup=True,overwrite=True, writeflags=True)
 # Now summary
-print "Flagging Step 11/11" 
+print ("Flagging Step 11/11") 
 flagdata(vis=ms,mode="summary",datacolumn="DATA", extendflags=True, 
-         name=vis+'summary.split', action="apply", flagbackup=True,overwrite=True, writeflags=True)
+         name=ms+'summary.split', action="apply", flagbackup=True,overwrite=True, writeflags=True)
 
 #####################################################################################################################################
 
-print "Calibrating measurement set %s" % ms
+print ("Calibrating measurement set %s" % ms)
 
-print "stating initial flux density scaling"
+print ("stating initial flux density scaling")
 setjy(vis=ms, field = fluxfield, spw = flagspw, scalebychan=True)
 
 # Phase only calibration added - suggested and tested by Silpa Sasikumar
 #
-print " starting initial phase only gaincal -> %s" % gainfilep0
+print ("starting initial phase only gaincal -> %s" % gainfilep0)
 gaincal(vis=ms,caltable=gainfilep0,field=gaincals,spw=gainspw,intent="",
          selectdata=True,timerange="",uvrange="",antenna="",scan="",
          observation="",msselect="",solint="int",combine="",preavg=-1.0,
@@ -351,25 +330,25 @@ gaincal(vis=ms,caltable=gainfilep0,field=gaincals,spw=gainspw,intent="",
          gainfield=[''],interp=[],spwmap=[],parang=True)
 
 
-print " starting initial gaincal -> %s" % gainfile0
+print ("starting initial gaincal -> %s" % gainfile0)
 gaincal(vis=ms, caltable = kcorrfile0, field = kcorrfield, spw = flagspw, 
         refant = refant,  minblperant = 6, solnorm = True,  gaintype = 'K', 
         gaintable =[gainfilep0], gainfield=gaincals, solint = '10min', combine = 'scan', minsnr=1.0,
         parang = True, append = False)
   
-print " starting bandpass -> %s" % bpassfile0
+print ("starting bandpass -> %s" % bpassfile0)
 bandpass(vis=ms, caltable = bpassfile0, field = bpassfield, spw = flagspw, minsnr=1.0,
          refant = refant, minblperant = 6, solnorm = True,  solint = 'inf', 
          bandtype = 'B', fillgaps = 8, gaintable = [gainfilep0, kcorrfile0], gainfield=[gaincals,kcorrfield], 
          parang = True, append = False)
-print " starting gaincal -> %s" % gainfile0
+print ("starting gaincal -> %s" % gainfile0)
 gaincal(vis=ms, caltable = gainfile0, field = gaincals, spw = gainspw, 
         refant = refant, solint = '1.0min', minblperant = 5, solnorm = False,  
         gaintype = 'G', combine = '', calmode = 'ap', minsnr=1.0, uvrange=uvracal,
         gaintable = [kcorrfile0,bpassfile0], gainfield = [kcorrfield,bpassfield],
         append = False, parang = True)
 
-print " starting fluxscale -> %s" % fluxfile0 
+print ("starting fluxscale -> %s" % fluxfile0) 
 fluxscale(vis=ms, caltable = gainfile0, reference = [fluxfield], 
           transfer = [transferfield], fluxtable = fluxfile0, 
           listfile = ms+'.fluxscale.txt0',
@@ -377,39 +356,39 @@ fluxscale(vis=ms, caltable = gainfile0, reference = [fluxfield],
           
 #####################################################################################################################################
 
-print " Applying Calibrations:"
+print ("Applying Calibrations:")
 
-print " applying calibrations: primary calibrator"
+print ("applying calibrations: primary calibrator")
 applycal(vis=ms, field = fluxfield, spw = flagspw, selectdata=False, calwt = False,
     gaintable = [kcorrfile0,bpassfile0, fluxfile0],
     gainfield = [kcorrfield,bpassfield,fluxfield],
     parang = True)
 
-print " applying calibrations: secondary calibrators"
+print ("applying calibrations: secondary calibrators")
 applycal(vis=ms, field = secondaryfield, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile0, bpassfile0, fluxfile0],
     gainfield = [kcorrfield, bpassfield,secondaryfield],
     parang= True)
 
-print " applying calibrations: polarized calibrator 2"
+print ("applying calibrations: polarized calibrator 2")
 applycal(vis=ms, field = polcalib, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile0, bpassfile0, fluxfile0],
     gainfield = [kcorrfield, bpassfield,polcalib2],
     parang= True)
 
-print " applying calibrations: unpolarized calibrator 1"
+print ("applying calibrations: unpolarized calibrator 1")
 applycal(vis=ms, field = unpolcalib, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile0, bpassfile0, fluxfile0],
     gainfield = [kcorrfield, bpassfield,unpolcalib1],
     parang= True)
 
-print " applying calibrations: another field" 
+print ("applying calibrations: another field") 
 applycal(vis=ms, field = anofield, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile0, bpassfile0, fluxfile0],
     gainfield = [kcorrfield, bpassfield, anofield],
     parang= True)
 
-print " applying calibrations: target fields"
+print ("applying calibrations: target fields")
 applycal(vis=ms, field = target, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile0, bpassfile0, fluxfile0],
     gainfield = [kcorrfield, bpassfield,secondaryfield],
@@ -419,83 +398,83 @@ applycal(vis=ms, field = target, spw = flagspw, selectdata = False, calwt = Fals
 
 # Change clipmax as required
 
-print "Second Round of Flagging" 
+print ("Second Round of Flagging") 
 
 default(flagdata)
 #Flag using 'clip' option to remove high points for calibrators
-print "Flagging Step 1/12" 
+print ("Flagging Step 1/12") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=fluxfield, clipminmax=clipfluxcal,
         datacolumn="corrected",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
-print "Flagging Step 2/12" 
+print ("Flagging Step 2/12") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=secondaryfield, clipminmax=clipphasecal,
         datacolumn="corrected",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
-print "Flagging Step 3/12" #Flagging the pulsar 
+print ("Flagging Step 3/12")
 flagdata(vis=ms,mode="clip", spw=flagspw,field=anofield, clipminmax=clipanofield,
         datacolumn="corrected",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
-print "Flagging Step 4/12" 
+print ("Flagging Step 4/12") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=polcalib, clipminmax=clippolcalib,
         datacolumn="corrected",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
-print "Flagging Step 5/12" 
+print ("Flagging Step 5/12") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=unpolcalib, clipminmax=clipunpolcalib,
         datacolumn="corrected",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
 # After clip, now flag using 'tfcrop' option for calibrator tight flagging
-print "Flagging Step 6/12" 
+print ("Flagging Step 6/12") 
 flagdata(vis=ms,mode="tfcrop", datacolumn="corrected", field=gaincals, ntime="scan",
         timecutoff=3.0, freqcutoff=3.0, timefit="line",freqfit="line",flagdimension="freqtime", 
         extendflags=False, timedevscale=4.0,freqdevscale=4.0, extendpols=False,growaround=False,
         action="apply", flagbackup=True,overwrite=True, writeflags=True)
 # Now flag using 'rflag' option for calibrator tight flagging
-print "Flagging Step 7/12" 
+print ("Flagging Step 7/12") 
 flagdata(vis=ms,mode="rflag",datacolumn="corrected",field=gaincals, timecutoff=3.0, 
         freqcutoff=3.0,timefit="poly",freqfit="line",flagdimension="freqtime", extendflags=False,
         timedevscale=4.0,freqdevscale=4.0,spectralmax=500.0,extendpols=False, growaround=False,
         flagneartime=False,flagnearfreq=False,action="apply",flagbackup=True,overwrite=True, writeflags=True)
 # Now extend the flags (70% more means full flag, change if required)
-print "Flagging Step 8/12" 
+print ("Flagging Step 8/12") 
 flagdata(vis=ms,mode="extend",spw=flagspw,field=gaincals,datacolumn="corrected",clipzeros=True,
          ntime="scan", extendflags=False, extendpols=False,growtime=90.0, growfreq=90.0,growaround=False,
          flagneartime=False, flagnearfreq=False, action="apply", flagbackup=True,overwrite=True, writeflags=True)
 # Now flag for target - moderate flagging, more flagging in self-cal cycles
 #Flag using 'clip' option to remove high points for target
-print "Flagging Step 9/12" 
+print ("Flagging Step 9/12") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=target, clipminmax=cliptarget,
         datacolumn="corrected",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
 # After clip, now flag using 'tfcrop' option for target
-print "Flagging Step 10/12" 
+print ("Flagging Step 10/12") 
 flagdata(vis=ms,mode="tfcrop", datacolumn="corrected", field=target, ntime="scan",
         timecutoff=4.0, freqcutoff=4.0, timefit="poly",freqfit="line",flagdimension="freqtime", 
         extendflags=False, timedevscale=5.0,freqdevscale=5.0, extendpols=False,growaround=False,
         action="apply", flagbackup=True,overwrite=True, writeflags=True)
 # Now flag using 'rflag' option for target
-print "Flagging Step 11/12" 
+print ("Flagging Step 11/12") 
 flagdata(vis=ms,mode="rflag",datacolumn="corrected",field=target, timecutoff=4.0, 
         freqcutoff=4.0,timefit="poly",freqfit="poly",flagdimension="freqtime", extendflags=False,
         timedevscale=5.0,freqdevscale=5.0,spectralmax=500.0,extendpols=False, growaround=False,
         flagneartime=False,flagnearfreq=False,action="apply",flagbackup=True,overwrite=True, writeflags=True)
 # Now summary
-print "Flagging Step 12/12" 
+print ("Flagging Step 12/12") 
 flagdata(vis=ms,mode="summary",datacolumn="corrected", extendflags=True, 
-         name=vis+'summary.split', action="apply", flagbackup=True,overwrite=True, writeflags=True)
+         name=ms+'summary.split', action="apply", flagbackup=True,overwrite=True, writeflags=True)
 #
 ####################################################################################################################################
 #
-print " Deleting existing model column"
+print ("Deleting existing model column")
 clearcal(ms)
 
 ####################################################################################################################################
 #
-print "Calibrating measurement set %s" % ms
+print ("Calibrating measurement set %s" % ms)
 
-print " starting initial flux density scaling"
+print ("starting initial flux density scaling")
 setjy(vis=ms, field = fluxfield, spw = flagspw, scalebychan=True)
 
-print " starting initial phase only gaincal -> %s" % gainfilep
+print ("starting initial phase only gaincal -> %s" % gainfilep)
 gaincal(vis=ms,caltable=gainfilep,field=gaincals,spw=gainspw,intent="",
          selectdata=True,timerange="",uvrange="",antenna="",scan="",
          observation="",msselect="",solint="int",combine="",preavg=-1.0,
@@ -504,45 +483,45 @@ gaincal(vis=ms,caltable=gainfilep,field=gaincals,spw=gainspw,intent="",
          npointaver=3,phasewrap=180.0,docallib=False,callib="",gaintable=[''],
          gainfield=[''],interp=[],spwmap=[],parang=True)
 
-print " starting initial gaincal -> %s" % kcorrfile
+print ("starting initial gaincal -> %s" % kcorrfile)
 gaincal(vis=ms, caltable = kcorrfile, field = kcorrfield, spw = flagspw, 
         refant = refant,  minblperant = 6, solnorm = True,  gaintype = 'K', 
         gaintable =[gainfilep], gainfield=gaincals, solint = '10min', combine = 'scan', minsnr=1.0,
         parang = True, append = False)
   
-print " starting bandpass -> %s" % bpassfile
+print ("starting bandpass -> %s" % bpassfile)
 bandpass(vis=ms, caltable = bpassfile, field = bpassfield, spw = flagspw, minsnr=1.0,
          refant = refant, minblperant = 6, solnorm = True,  solint = 'inf', 
          bandtype = 'B', fillgaps = 8, gaintable = [gainfilep, kcorrfile], gainfield=[gaincals, kcorrfield], 
          parang = True, append = False)
      
-print " starting gaincal -> %s" % gainfile
+print ("starting gaincal -> %s" % gainfile)
 gaincal(vis=ms, caltable = gainfile, field = gaincals, spw = gainspw, 
         refant = refant, solint = '1.0min', minblperant = 5, solnorm = False,  
         gaintype = 'G', combine = '', calmode = 'ap', minsnr=1.0, uvrange=uvracal,
         gaintable = [kcorrfile,bpassfile], gainfield = [kcorrfield,bpassfield],
         append = False, parang = True)
-print " starting fluxscale -> %s" % fluxfile
+print ("starting fluxscale -> %s" % fluxfile)
 fluxscale(vis=ms, caltable = gainfile, reference = [fluxfield], 
           transfer = [transferfield], fluxtable = fluxfile, 
           listfile = ms+'.fluxscale.txt2',
           append = False)               
 ####################################################################################################################################
-print " starting Polarization calibration -> "
+print ("starting Polarization calibration -> ")
 #
-print " setting the polarization calibrator models"
+print ("setting the polarization calibrator models")
 setjy(vis=ms, field = polcalib1, spw = flagspw, scalebychan=True, standard='manual', 
       fluxdensity=[i0_1,0,0,0], spix=alphabeta_1, reffreq=reffreq, polindex=polindices_1, polangle=polangles_1)
 setjy(vis=ms, field = polcalib2, spw = flagspw, scalebychan=True, standard='manual', 
       fluxdensity=[i0_2,0,0,0], spix=alphabeta_2, reffreq=reffreq, polindex=polindices_2, polangle=polangles_2)
 
 
-print " starting cross-hand delay calibration -> %s" % kcross1
+print ("starting cross-hand delay calibration -> %s" % kcross1)
 gaincal(vis=ms, caltable = kcross1, field = polcalib1, spw = flagspw, 
         refant = refant, solint = 'inf', gaintype = 'KCROSS', combine = 'scan',
         gaintable = [kcorrfile, bpassfile, gainfile], gainfield = [kcorrfield,bpassfield,polcalib1],
         parang = True) 
-print " starting cross-hand delay calibration -> %s" % kcross2
+print ("starting cross-hand delay calibration -> %s" % kcross2)
 gaincal(vis=ms, caltable = kcross2, field = polcalib2, spw = flagspw, 
         refant = refant, solint = 'inf', gaintype = 'KCROSS', combine = 'scan',
         gaintable = [kcorrfile, bpassfile, gainfile], gainfield = [kcorrfield,bpassfield,polcalib2],
@@ -554,16 +533,16 @@ kcross = kcross1 #or kcross2
 kcrosscalib = polcalib1 #or polcalib2
 ####################################################################################################################################
 
-print " starting leakage calibration -> %s" % leakage1
+print ("starting leakage calibration -> %s" % leakage1)
 polcal(vis=ms, caltable = leakage1, field = polcalib1, spw = flagspw, 
        refant = refant, solint = 'inf', poltype = 'Df+QU', combine = 'scan',
        gaintable = [kcorrfile, bpassfile, gainfile, kcross], gainfield = [kcorrfield, bpassfield, polcalib1, kcrosscalib])
-print " starting leakage calibration -> %s" % leakage2
+print ("starting leakage calibration -> %s" % leakage2)
 polcal(vis=ms, caltable = leakage2, field = polcalib2, spw = flagspw, 
        refant = refant, solint = 'inf', poltype = 'Df+QU', combine = 'scan',
        gaintable = [kcorrfile, bpassfile, gainfile, kcross], gainfield = [kcorrfield, bpassfield, polcalib2, kcrosscalib])
 
-print " starting leakage calibration :unpolarized -> %s" % unpolleakage1
+print ("starting leakage calibration :unpolarized -> %s" % unpolleakage1)
 polcal(vis=ms, caltable = unpolleakage1, field = unpolcalib1, spw = flagspw, refant = refant, solint = 'inf', poltype = 'Df', combine = 'scan', gaintable = [kcorrfile, bpassfile, gainfile, kcross], gainfield = [kcorrfield,bpassfield,unpolcalib1,kcrosscalib])
 
 ####################################################################################################################################
@@ -573,10 +552,10 @@ leakagecalib = polcalib1 #or polcalib2 or unpolcalib1
 
 ####################################################################################################################################
 
-print " starting polarization angle calibration -> %s" % polang1
+print ("starting polarization angle calibration -> %s" % polang1)
 polcal(vis=ms, caltable = polang1, field = polcalib1, refant = refant, solint = 'inf', poltype = 'Xf',combine = 'scan', gaintable = [kcorrfile, bpassfile, gainfile, kcross, leakage], 
         gainfield = [kcorrfield,bpassfield,polcalib1,kcrosscalib,leakagecalib])
-print " starting polarization angle calibration -> %s" % polang2
+print ("starting polarization angle calibration -> %s" % polang2)
 polcal(vis=ms, caltable = polang2, field = polcalib2, refant = refant, solint = 'inf', poltype = 'Xf',combine = 'scan', gaintable = [kcorrfile, bpassfile, gainfile, kcross, leakage], 
         gainfield = [kcorrfield,bpassfield,polcalib2,kcrosscalib,leakagecalib])
 
@@ -586,39 +565,39 @@ polangcalib = polcalib1 #or polcalib2
 ####################################################################################################################################
 
 #
-print  " Applying Calibrations:" 
+print  ("Applying Calibrations:") 
 
-print " applying calibrations: primary calibrator"
+print ("applying calibrations: primary calibrator")
 applycal(vis=ms, field = fluxfield, spw = flagspw, selectdata=False, calwt = False,
     gaintable = [kcorrfile,bpassfile, fluxfile, kcross, leakage, polang],
     gainfield = [kcorrfield,bpassfield,fluxfield, kcrosscalib, leakagecalib, polangcalib],
     parang = True)
 
-print " applying calibrations: secondary calibrators"
+print ("applying calibrations: secondary calibrators")
 applycal(vis=ms, field = secondaryfield, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile, bpassfile, fluxfile, kcross, leakage, polang],
     gainfield = [kcorrfield, bpassfield,secondaryfield, kcrosscalib, leakagecalib, polangcalib],
     parang= True)
 
-print " applying calibrations: polarized calibrator"
+print ("applying calibrations: polarized calibrator")
 applycal(vis=ms, field = polcalib2, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile, bpassfile, fluxfile, kcross, leakage, polang],
     gainfield = [kcorrfield, bpassfield,polcalib2, kcrosscalib, leakagecalib, polangcalib],
     parang= True)
 
-print " applying calibrations: unpolarized calibrator"
+print ("applying calibrations: unpolarized calibrator")
 applycal(vis=ms, field = unpolcalib1, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile, bpassfile, fluxfile, kcross, leakage, polang],
     gainfield = [kcorrfield, bpassfield,unpolcalib1, kcrosscalib, leakagecalib, polangcalib],
     parang= True)
 
-print " applying calibrations: target fields"
+print ("applying calibrations: target fields")
 applycal(vis=ms, field = target, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile, bpassfile, fluxfile, kcross, leakage, polang],
     gainfield = [kcorrfield, bpassfield,secondaryfield, kcrosscalib, leakagecalib, polangcalib],
     parang= True)
     
-print " applying calibrations: Another field"
+print ("applying calibrations: Another field")
 applycal(vis=ms, field = anofield, spw = flagspw, selectdata = False, calwt = False,
     gaintable = [kcorrfile, bpassfile, fluxfile, kcross, leakage, polang],
     gainfield = [kcorrfield, bpassfield,anofield, kcrosscalib, leakagecalib, polangcalib],
@@ -626,26 +605,26 @@ applycal(vis=ms, field = anofield, spw = flagspw, selectdata = False, calwt = Fa
 
 ####################################################################################################################################
 
-print "Flagging Target"
+print ("Flagging Target")
 # Now flag for target - moderate flagging
-print "Flagging Step 1/3" 
+print ("Flagging Step 1/3") 
 flagdata(vis=ms,mode="clip", spw=flagspw,field=target, clipminmax=cliptarget,
         datacolumn="corrected",clipoutside=True, clipzeros=True, extendpols=False, 
         action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
 # now flag using 'rflag' option 
-print "Flagging Step 2/3"
+print ("Flagging Step 2/3")
 flagdata(vis=ms,mode="rflag",datacolumn="corrected",field=target, timecutoff=4.0, 
         freqcutoff=4.0,timefit="poly",freqfit="poly",flagdimension="freqtime", extendflags=False,
         timedevscale=5.0,freqdevscale=5.0,spectralmax=500.0,extendpols=False, growaround=False,
         flagneartime=False,flagnearfreq=False,action="apply",flagbackup=True,overwrite=True, writeflags=True)
-print "Flagging Step 3/3"
+print ("Flagging Step 3/3")
 # Now summary
 flagdata(vis=ms,mode="summary",datacolumn="corrected", extendflags=True, 
          name=vis+'summary.split', action="apply", flagbackup=True,overwrite=True, writeflags=True)
 
 ####################################################################################################################################
 
-print "Splitting target field"
+print ("Splitting target field")
 split(vis=ms, outputvis = fieldnames[int(target)]+'.ms', datacolumn='corrected', 
           field = target, spw = splitspw, keepflags=False, width = specave)
 #
@@ -657,12 +636,12 @@ split(vis=ms, outputvis = fieldnames[int(target)]+'.ms', datacolumn='corrected',
 
 ####################################################################################################################################
 
-print "\n Cleaning up. Starting imaging..."  
+print ("\n Cleaning up. Starting imaging...")  
 
 ms=fieldnames[int(target)]+'.ms'
 
 def QUVimg():
-	print "Creating Stokes Q image"
+	print ("Creating Stokes Q image")
 
 	tclean(vis=ms,selectdata=True,field="",spw="",timerange="",uvrange="", antenna="",scan="",observation="",intent="", datacolumn= dc , imagename=ms+'.'+scmode+str(count-1)+'_Q',imsize=imagesize,cell=cellsize,phasecenter="",
        stokes="Q",projection="SIN",startmodel="",specmode="mfs",reffreq="",
@@ -683,7 +662,7 @@ def QUVimg():
 
 	exportfits(imagename=ms+'.'+scmode+str(count-1)+'_Q'+'.image.tt0', fitsimage=ms+'.'+scmode+str(count-1)+'_Q'+'.fits', velocity=False,optical=False,bitpix=-32, minpix=0, maxpix=-1, overwrite=False, dropstokes=False, stokeslast=True, history=True, dropdeg=False)
 
-	print "Creating Stokes U image"
+	print ("Creating Stokes U image")
 
 	tclean(vis=ms,selectdata=True,field="",spw="",timerange="", uvrange="",antenna="",scan="",observation="",intent="",  datacolumn= dc , imagename=ms+'.'+scmode+str(count-1)+'_U',imsize=imagesize,cell=cellsize,phasecenter="",
        stokes="U",projection="SIN",startmodel="",specmode="mfs",reffreq="",
@@ -705,7 +684,7 @@ def QUVimg():
 	exportfits(imagename=ms+'.'+scmode+str(count-1)+'_U'+'.image.tt0' , fitsimage=ms+'.'+scmode+str(count-1)+'_U'+'.fits', velocity=False, optical=False, bitpix=-32, minpix=0, maxpix=-1, overwrite=False, dropstokes=False, stokeslast=True, history=True, dropdeg=False)
 	
 	if createV == True:
-		print "Creating Stokes V image"
+		print ("Creating Stokes V image")
 
 		tclean(vis=ms,selectdata=True,field="",spw="",timerange="",
 		       uvrange="",antenna="",scan="",observation="",intent="",datacolumn="corrected",imagename=ms+'.'+scmode+str(count-1)+'_V',imsize=imagesize,cell=cellsize,phasecenter="",
@@ -729,13 +708,13 @@ def QUVimg():
 		           minpix=0,maxpix=-1,overwrite=False,dropstokes=False,stokeslast=True,
  		          history=True,dropdeg=False)	
 	
-print "\n Cleaning up. Starting imaging..."
+print ("\n Cleaning up. Starting imaging...")
 #start self-calibration cycles    
 count=1
 scmode='p'
 #
 
-print "Prepaing dirty image"
+print ("Prepaing dirty image")
 tclean(vis=ms, imagename=ms+'.'+scmode+str(count-1),imsize=imagesize,cell=cellsize, selectdata=True, datacolumn="data", 
        phasecenter="",stokes="I",projection="SIN", specmode="mfs",nchan=-1,gridder="widefield",wprojplanes=wproj,
        aterm=True,pblimit=-1, deconvolver="mtmfs",nterms=2,smallscalebias=0.6,restoration=True,pbcor=False,
@@ -746,20 +725,20 @@ tclean(vis=ms, imagename=ms+'.'+scmode+str(count-1),imsize=imagesize,cell=cellsi
 
 exportfits(imagename=ms+'.'+scmode+str(count-1)+'.image.tt0', fitsimage=ms+'.'+scmode+str(count-1)+'.fits')
 
-print "Made : " +scmode+str(count-1)
+print ("Made : " +scmode+str(count-1))
 
 if  dirtyQUV == True or eachQUV == True:
 	dc="data"
 	QUVimg()
 
 #start self-calibration cycles  
-print "Starting self-calibration, going to phase only calibration Cycle"
+print ("Starting self-calibration, going to phase only calibration Cycle")
 casalog.post("Staring self-calibration, going to phase only calibration Cycle")
 
 for j in range(pcycles):  
   scmode='p'
   if(doflag==True and count>=1):
-     print "Began flagging :"+scmode+str(count)
+     print ("Began flagging :"+scmode+str(count))
      flagdata(vis=ms,mode="clip", spw="",field='', clipminmax=clipresid,
               datacolumn="RESIDUAL_DATA",clipoutside=True, clipzeros=True, extendpols=False, 
               action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
@@ -770,11 +749,11 @@ for j in range(pcycles):
      flagdata(vis=ms,mode="summary",datacolumn="RESIDUAL_DATA", extendflags=False, 
               name=ms+'temp.summary', action="apply", flagbackup=True,overwrite=True, writeflags=True)
 #
-  print "Began doing self-cal on :"+scmode+str(count)
+  print ("Began doing self-cal on :"+scmode+str(count))
   gaincal(vis=ms,caltable=ms+'.'+scmode+str(count),selectdata=False,solint=str(solint/2**count)+'min',refant=refant,refantmode="strict",
         minblperant=6, spw=gainspw2,minsnr=1.0,solnorm=True,gaintype="G",calmode=scmode,append=False, uvrange=uvrascal, parang=False)
 # 
-  print "Began processing :"+scmode+str(count)
+  print ("Began processing :"+scmode+str(count))
   applycal(vis=ms, selectdata=False,gaintable=ms+'.'+scmode+str(count), parang=False,calwt=False,applymode="calflag",flagbackup=True)  
 #
   tclean(vis=ms, imagename=ms+'.'+scmode+str(count),imsize=imagesize,cell=cellsize, selectdata=True, datacolumn="corrected", 
@@ -785,13 +764,13 @@ for j in range(pcycles):
        minpsffraction=0.05,maxpsffraction=0.8,usemask="auto-multithresh",pbmask=0.0,sidelobethreshold=2.0,
        growiterations=75,restart=True,savemodel="modelcolumn",calcres=True,calcpsf=True,parallel=False)
   exportfits(imagename=ms+'.'+scmode+str(count)+'.image.tt0', fitsimage=ms+'.'+scmode+str(count)+'.fits')
-  print "Made : " +scmode+str(count)
+  print ("Made : " +scmode+str(count))
   if eachQUV == True:
 	dc="corrected"
   	QUVimg()
   count = count + 1
 #
-print "Completed phase only self-calibration, going to A&P calibration Cycle"
+print ("Completed phase only self-calibration, going to A&P calibration Cycle")
 casalog.post("Completed phase only self-calibration, going to A&P calibration Cycle")
 #
 count=1
@@ -803,7 +782,7 @@ for j in range(apcycles):
    sfactor=count
 #
   if(doflag==True):
-     print "Began flagging :"+scmode+str(count)
+     print ("Began flagging :"+scmode+str(count))
      flagdata(vis=ms,mode="clip", spw="",field='', clipminmax=clipresid,
               datacolumn="RESIDUAL_DATA",clipoutside=True, clipzeros=True, extendpols=False, 
               action="apply",flagbackup=True, savepars=False, overwrite=True, writeflags=True)
@@ -814,13 +793,13 @@ for j in range(apcycles):
      flagdata(vis=ms,mode="summary",datacolumn="RESIDUAL_DATA", extendflags=False, 
               name=ms+'temp.summary', action="apply", flagbackup=True,overwrite=True, writeflags=True)
 #
-  print "Began doing self-cal on :"+scmode+str(count)
+  print ("Began doing self-cal on :"+scmode+str(count))
   gaincal(vis=ms,caltable=ms+'.'+scmode+str(count),selectdata=False,solint=str(apsolint/2**sfactor)+'min',refant=refant,
         refantmode="strict",spw=gainspw2,minblperant=6, minsnr=1.0,solnorm=True,gaintype="G",calmode=scmode,append=False, parang=False)
 #
   applycal(vis=ms, selectdata=False,gaintable=ms+'.'+scmode+str(count), parang=False,calwt=False,applymode="calflag",flagbackup=True)  
 #
-  print "Began processing :"+scmode+str(count)
+  print ("Began processing :"+scmode+str(count))
   tclean(vis=ms, imagename=ms+'.'+scmode+str(count),imsize=imagesize,cell=cellsize, selectdata=True, datacolumn="corrected", 
        phasecenter="",stokes="I",projection="SIN", specmode="mfs",nchan=-1,gridder="widefield",wprojplanes=wproj,
        aterm=True,pblimit=-1, deconvolver="mtmfs",nterms=2,smallscalebias=0.6,restoration=True,pbcor=False,
@@ -829,13 +808,13 @@ for j in range(apcycles):
        minpsffraction=0.05,maxpsffraction=0.8,usemask="auto-multithresh",pbmask=0.0,sidelobethreshold=2.0,
        growiterations=75,restart=True,savemodel="modelcolumn",calcres=True,calcpsf=True,parallel=False)
   exportfits(imagename=ms+'.'+scmode+str(count)+'.image.tt0', fitsimage=ms+'.'+scmode+str(count)+'.fits')
-  print "Made : " +scmode+str(count)
+  print ("Made : " +scmode+str(count))
   if eachQUV == True:
 	dc="corrected"
   	QUVimg()
   count = count + 1
 #
-print "Completed processing AP self-calibrations\n"
+print ("Completed processing AP self-calibrations\n")
 casalog.post("Completed processing A&P self-calibrations")
 
 ####################################################################################################################################
@@ -844,5 +823,5 @@ if eachQUV == False:
 	QUVimg()
 ####################################################################################################################################
 
-print "Done"
+print ("Done")
 
